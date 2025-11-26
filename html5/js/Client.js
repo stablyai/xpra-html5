@@ -539,13 +539,7 @@ class XpraClient {
       this.clog("no webworker support at all.");
     }
 
-    if (this.webtransport) {
-      this.protocol = new XpraWebTransportProtocol();
-    } else if (WORKER) {
-      this.protocol = new XpraProtocolWorkerHost();
-    } else {
-      this.protocol = new XpraProtocol();
-    }
+    this.protocol = new XpraProtocol();
     this.open_protocol();
 
     this.decode_worker_timeout = false;
