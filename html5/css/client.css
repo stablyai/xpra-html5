@@ -29,7 +29,7 @@ body {
 
 #background.dark {
   color: rgb(130, 130, 130);
-  background-color: rgb(49, 65, 88);
+  background-color: #161d27;
 }
 
 div.window canvas {
