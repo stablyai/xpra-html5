@@ -134,6 +134,59 @@ body {
 
 #open-browser-btn:disabled {
   cursor: not-allowed;
+  opacity: 0.6;
+  background-color: #adb5bd;
+  color: #868e96;
+}
+
+#open-browser-btn:disabled .world-icon {
+  stroke: #868e96;
+}
+
+/* Button wrapper for tooltip positioning */
+.btn-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.btn-tooltip {
+  position: absolute;
+  bottom: calc(100% + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 0.8rem 1.2rem;
+  background-color: #212529;
+  color: #fff;
+  font-size: 1.6rem;
+  font-weight: 500;
+  border-radius: 8px;
+  white-space: nowrap;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease;
+  pointer-events: none;
+  z-index: 100;
+}
+
+.btn-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 8px solid transparent;
+  border-top-color: #212529;
+}
+
+/* Only show tooltip when button is disabled and hovered */
+.btn-wrapper:hover .btn-tooltip {
+  opacity: 0;
+  visibility: hidden;
+}
+
+.btn-wrapper:has(#open-browser-btn:disabled):hover .btn-tooltip {
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Error toast */
@@ -198,6 +251,24 @@ body {
 
 #background.dark #open-browser-btn:active:not(:disabled) .btn-loader-overlay {
   background-color: #1971c2;
+}
+
+#background.dark #open-browser-btn:disabled {
+  background-color: #495057;
+  color: #868e96;
+}
+
+#background.dark #open-browser-btn:disabled .world-icon {
+  stroke: #868e96;
+}
+
+#background.dark .btn-tooltip {
+  background-color: #f8f9fa;
+  color: #212529;
+}
+
+#background.dark .btn-tooltip::after {
+  border-top-color: #f8f9fa;
 }
 
 #background.dark .error-toast {

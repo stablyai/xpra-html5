@@ -87,15 +87,18 @@
       <svg class="browser-icon" xmlns="http://www.w3.org/2000/svg" width="320" height="320" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M4 8h16" /><path d="M4 6a2 2 0 0 1 2 -2h12a2 2 0 0 1 2 2v12a2 2 0 0 1 -2 2h-12a2 2 0 0 1 -2 -2l0 -12" /><path d="M8 4v4" /></svg>
       <h3>The AI will open the browser here automatically when needed.</h3>
       <p class="open-browser-text">Or open a browser if you'd like to record</p>
-      <button id="open-browser-btn" onclick="requestOpenBrowser()">
-        <span class="btn-content">
-          <svg class="world-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M3.6 9h16.8" /><path d="M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18" /><path d="M12.5 3a17 17 0 0 1 0 18" /></svg>
-          <span class="btn-text">Open Browser</span>
-        </span>
-        <span class="btn-loader-overlay">
-          <span class="btn-loader"></span>
-        </span>
-      </button>
+      <div class="btn-wrapper">
+        <button id="open-browser-btn" onclick="requestOpenBrowser()" disabled>
+          <span class="btn-content">
+            <svg class="world-icon" xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path stroke="none" d="M0 0h24v24H0z" fill="none"/><path d="M3 12a9 9 0 1 0 18 0a9 9 0 0 0 -18 0" /><path d="M3.6 9h16.8" /><path d="M3.6 15h16.8" /><path d="M11.5 3a17 17 0 0 0 0 18" /><path d="M12.5 3a17 17 0 0 1 0 18" /></svg>
+            <span class="btn-text">Open Browser</span>
+          </span>
+          <span class="btn-loader-overlay">
+            <span class="btn-loader"></span>
+          </span>
+        </button>
+        <span class="btn-tooltip">Agent is working, please wait</span>
+      </div>
     </div>
 
     <div id="login-overlay">
@@ -293,10 +296,12 @@
       // State for the open browser button
       let isOpeningBrowser = false;
       let loadingTimeoutId = null;
+      // Start as busy (disabled) - parent will tell us when agent is not busy
+      let isAgentBusy = true;
 
       // Send message to parent window to request browser open via MCP
       function requestOpenBrowser() {
-        if (isOpeningBrowser) return;
+        if (isOpeningBrowser || isAgentBusy) return;
         
         isOpeningBrowser = true;
         const btn = document.getElementById('open-browser-btn');
@@ -309,10 +314,30 @@
         loadingTimeoutId = setTimeout(function() {
           isOpeningBrowser = false;
           btn.classList.remove('loading');
-          btn.disabled = false;
+          // Only re-enable if agent is not busy
+          if (!isAgentBusy) {
+            btn.disabled = false;
+          }
           loadingTimeoutId = null;
         }, 10000);
       }
+
+      // Listen for agent busy state from parent window
+      window.addEventListener('message', function(event) {
+        if (event.data && event.data.type === 'xpra-agent-busy') {
+          isAgentBusy = event.data.isBusy;
+          const btn = document.getElementById('open-browser-btn');
+          if (btn) {
+            // Only update disabled state if not currently in loading state
+            if (!isOpeningBrowser) {
+              btn.disabled = isAgentBusy;
+            }
+          }
+        }
+      });
+
+      // Signal to parent that iframe is ready to receive messages
+      window.parent.postMessage({ type: 'xpra-iframe-ready' }, '*');
 
       const default_settings = {};
       const getparam = function(prop) {
